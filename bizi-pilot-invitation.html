@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#081a3a" />
+  <title>Bizi Pilot | הזמנה אישית</title>
+  <style>
+    :root {
+      --navy: #081a3a;
+      --navy-2: #102b59;
+      --paper: #fffdf8;
+      --ink: #16233a;
+      --muted: #667085;
+      --pink: #ea5a99;
+      --line: rgba(8, 26, 58, .13);
+      --shadow: 0 28px 80px rgba(1, 12, 35, .24);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, "Helvetica Neue", sans-serif;
+      color: white;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(72, 112, 183, .22), transparent 31rem),
+        linear-gradient(145deg, var(--navy-2), var(--navy) 58%, #041027);
+      overflow-x: hidden;
+    }
+
+    button { font: inherit; }
+
+    .page {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 28px 18px 48px;
+      position: relative;
+      isolation: isolate;
+    }
+
+    .page::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, black, transparent 80%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .shell {
+      width: min(920px, 100%);
+      text-align: center;
+    }
+
+    .brand {
+      width: 190px;
+      margin: 0 auto 30px;
+      padding: 12px 16px 11px;
+      background: rgba(255,255,255,.96);
+      border: 1px solid rgba(255,255,255,.55);
+      border-radius: 16px;
+      box-shadow: 0 14px 38px rgba(0,0,0,.18);
+    }
+    .brand img { display: block; width: 100%; height: auto; }
+
+    .intro {
+      transition: opacity .5s ease, transform .6s ease;
+    }
+    .is-open .intro {
+      opacity: 0;
+      transform: translateY(-18px);
+      pointer-events: none;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+
+    .eyebrow {
+      font-size: clamp(1rem, 2vw, 1.15rem);
+      letter-spacing: .18em;
+      font-weight: 700;
+      color: #d9e2f4;
+      margin-bottom: 8px;
+      direction: ltr;
+    }
+    h1 {
+      font-size: clamp(2.8rem, 8vw, 5.6rem);
+      line-height: .95;
+      margin: 0 0 18px;
+      font-weight: 500;
+      letter-spacing: -.04em;
+      direction: ltr;
+    }
+    .subtitle {
+      font-size: clamp(1.3rem, 3vw, 2rem);
+      font-weight: 700;
+      margin: 0 0 10px;
+    }
+    .hint {
+      margin: 0 auto 34px;
+      color: #c8d4e9;
+      font-size: 1rem;
+    }
+
+    .envelope-button {
+      width: min(520px, 94vw);
+      height: clamp(210px, 38vw, 320px);
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      position: relative;
+      margin: 0 auto;
+      display: block;
+      filter: drop-shadow(0 34px 34px rgba(0,0,0,.35));
+    }
+    .envelope-button:focus-visible {
+      outline: 3px solid var(--pink);
+      outline-offset: 10px;
+      border-radius: 20px;
+    }
+    .envelope {
+      position: absolute;
+      inset: 20% 0 0;
+      background: linear-gradient(145deg, #16386d, #0c234b);
+      border-radius: 8px;
+      overflow: visible;
+      animation: breathe 3.2s ease-in-out infinite;
+    }
+    .envelope::before,
+    .envelope::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 8px;
+    }
+    .envelope::before {
+      background: linear-gradient(35deg, #0a1e42 49.4%, transparent 50%),
+                  linear-gradient(-35deg, #12305f 49.4%, transparent 50%);
+      z-index: 3;
+    }
+    .envelope::after {
+      background: linear-gradient(145deg, transparent 48%, rgba(255,255,255,.06) 50%, transparent 52%);
+      z-index: 4;
+      pointer-events: none;
+    }
+    .flap {
+      position: absolute;
+      inset: 0 0 auto;
+      height: 62%;
+      transform-origin: top center;
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      background: linear-gradient(165deg, #1b427c, #0c234b 75%);
+      z-index: 5;
+      transition: transform .9s cubic-bezier(.2,.75,.25,1);
+      backface-visibility: hidden;
+    }
+    .seal {
+      position: absolute;
+      z-index: 7;
+      width: 72px;
+      aspect-ratio: 1;
+      left: 50%;
+      top: 49%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 1.8rem;
+      font-weight: 300;
+      background: radial-gradient(circle at 32% 28%, #244e8e, #0a1c3c 72%);
+      border: 1px solid rgba(255,255,255,.26);
+      box-shadow: inset 0 0 0 6px rgba(255,255,255,.04), 0 8px 18px rgba(0,0,0,.35);
+      transition: opacity .25s ease, transform .45s ease;
+    }
+    .seal::after { content: "+"; color: var(--pink); transform: translateY(-1px); }
+    .open-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 24px;
+      color: #eef4ff;
+      font-weight: 700;
+    }
+    .open-label::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-right: 2px solid var(--pink);
+      border-bottom: 2px solid var(--pink);
+      transform: rotate(45deg) translateY(-2px);
+    }
+
+    @keyframes breathe {
+      0%,100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-7px) scale(1.008); }
+    }
+
+    .letter-stage {
+      display: none;
+      position: relative;
+      margin-top: 10px;
+      perspective: 1200px;
+    }
+    .is-open .letter-stage { display: block; }
+    .is-open .envelope-button { display: none; }
+
+    .letter {
+      width: min(820px, 100%);
+      margin: 0 auto;
+      background:
+        linear-gradient(rgba(255,255,255,.92), rgba(255,255,255,.92)),
+        repeating-linear-gradient(0deg, transparent 0 34px, rgba(8,26,58,.018) 35px);
+      color: var(--ink);
+      border-radius: 26px;
+      padding: clamp(28px, 6vw, 58px);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,.8);
+      transform: translateY(120px) scale(.86) rotateX(7deg);
+      opacity: 0;
+      animation: revealLetter 1.05s .15s cubic-bezier(.18,.82,.22,1) forwards;
+      position: relative;
+      overflow: hidden;
+      text-align: right;
+    }
+    .letter::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: 118px;
+      height: 118px;
+      background: linear-gradient(135deg, transparent 49%, rgba(8,26,58,.055) 50%);
+      transform: rotate(180deg);
+    }
+    .letter::after {
+      content: "+";
+      position: absolute;
+      top: 24px;
+      left: 28px;
+      color: var(--pink);
+      font-size: 1.7rem;
+    }
+    @keyframes revealLetter {
+      45% { opacity: 1; transform: translateY(48px) scale(.94) rotateX(3deg); }
+      100% { opacity: 1; transform: translateY(0) scale(1) rotateX(0); }
+    }
+
+    .letter-kicker {
+      text-align: center;
+      direction: ltr;
+      color: var(--navy);
+      font-size: clamp(2.3rem, 6vw, 4.3rem);
+      line-height: 1;
+      letter-spacing: -.04em;
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+    .personal {
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0 0 36px;
+      padding-bottom: 22px;
+      position: relative;
+    }
+    .personal::after {
+      content: "";
+      position: absolute;
+      width: 76px;
+      height: 3px;
+      border-radius: 99px;
+      background: var(--pink);
+      right: 50%;
+      bottom: 0;
+      transform: translateX(50%);
+    }
+    .copy {
+      max-width: 650px;
+      margin: 0 auto;
+      font-size: clamp(1rem, 2.2vw, 1.12rem);
+      line-height: 1.85;
+    }
+    .copy p { margin: 0 0 18px; }
+
+    .expect {
+      margin: 34px auto 28px;
+      padding: 26px;
+      border-radius: 18px;
+      background: #f6f8fc;
+      border: 1px solid var(--line);
+      max-width: 680px;
+    }
+    .expect h2 {
+      color: var(--navy);
+      font-size: 1.25rem;
+      margin: 0 0 18px;
+    }
+    .expect-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .item {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      line-height: 1.45;
+      font-size: .98rem;
+    }
+    .icon {
+      flex: 0 0 33px;
+      height: 33px;
+      border: 1px solid rgba(234,90,153,.33);
+      color: var(--pink);
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: .9rem;
+      background: white;
+    }
+
+    .meeting {
+      text-align: center;
+      margin: 30px auto 8px;
+    }
+    .meeting h2 { font-size: 1.15rem; margin: 0 0 8px; }
+    .meeting p { margin: 0; color: var(--muted); }
+    .closing {
+      text-align: center;
+      font-size: 1.18rem;
+      font-weight: 700;
+      margin: 32px 0 18px;
+    }
+    .join {
+      display: block;
+      width: min(360px, 100%);
+      margin: 0 auto;
+      border: 0;
+      border-radius: 14px;
+      padding: 16px 22px;
+      background: linear-gradient(145deg, #123263, var(--navy));
+      color: white;
+      font-weight: 800;
+      font-size: 1.15rem;
+      cursor: pointer;
+      box-shadow: 0 12px 24px rgba(8,26,58,.22);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .join:hover { transform: translateY(-2px); box-shadow: 0 16px 30px rgba(8,26,58,.28); }
+    .join:focus-visible { outline: 3px solid var(--pink); outline-offset: 4px; }
+    .note {
+      text-align: center;
+      color: var(--muted);
+      font-size: .85rem;
+      line-height: 1.55;
+      margin: 13px auto 0;
+    }
+
+    .success {
+      display: none;
+      text-align: center;
+      padding: 36px 10px 10px;
+      animation: pop .55s cubic-bezier(.2,.85,.25,1) both;
+    }
+    .success.show { display: block; }
+    .success-icon {
+      width: 72px;
+      aspect-ratio: 1;
+      margin: 0 auto 16px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: white;
+      background: var(--navy);
+      font-size: 2rem;
+      box-shadow: 0 14px 30px rgba(8,26,58,.22);
+    }
+    .success h2 { margin: 0 0 10px; font-size: 2rem; color: var(--navy); }
+    .success p { color: var(--muted); margin: 0; line-height: 1.65; }
+    @keyframes pop { from { opacity: 0; transform: scale(.92) translateY(12px); } }
+
+    .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 99; }
+    .piece {
+      position: absolute;
+      top: -20px;
+      width: 8px;
+      height: 14px;
+      border-radius: 2px;
+      animation: fall var(--duration) linear forwards;
+    }
+    @keyframes fall {
+      to { transform: translate3d(var(--drift), 110vh, 0) rotate(780deg); opacity: .2; }
+    }
+
+    @media (max-width: 640px) {
+      .page { padding-inline: 12px; }
+      .brand { width: 160px; margin-bottom: 24px; }
+      .letter { border-radius: 20px; padding: 30px 20px; }
+      .expect { padding: 20px 16px; }
+      .expect-grid { grid-template-columns: 1fr; }
+      .item { font-size: .95rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page" id="page">
+    <section class="shell">
+      <div class="brand" aria-label="לוטם">
+        <img src="data:image/png;base64,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" alt="לוגו לוטם" />
+      </div>
+
+      <div class="intro">
+        <div class="eyebrow">Bizi Pilot</div>
+        <h1>הזמנה אישית</h1>
+        <p class="subtitle">מחכה לך הזמנה מיוחדת</p>
+        <p class="hint">לחץ/י על המעטפה לפתיחה</p>
+
+        <button class="envelope-button" id="openInvitation" aria-label="פתיחת ההזמנה">
+          <span class="envelope" aria-hidden="true">
+            <span class="flap"></span>
+            <span class="seal"></span>
+          </span>
+        </button>
+        <div class="open-label">לפתיחת ההזמנה</div>
+      </div>
+
+      <div class="letter-stage" aria-live="polite">
+        <article class="letter" id="letter">
+          <div class="letter-kicker">Bizi Pilot</div>
+          <p class="personal">הזמנה אישית</p>
+
+          <div class="copy">
+            <p>שמחים להזמין אותך להיות בין הראשונים שיכירו את מערכת ה־CRM החדשה של לוטם.</p>
+            <p>בחרנו להזמין אותך משום שאנחנו מאמינים שהניסיון, הראייה המקצועית והמשוב שלך יסייעו לנו לדייק את המערכת ולהפוך אותה לכלי עבודה איכותי עבור כלל הארגון.</p>
+            <p>במפגש נכיר את המערכת, נתנסה בתהליכי העבודה החדשים ונאסוף תובנות שיסייעו לנו לקראת העלייה לאוויר.</p>
+          </div>
+
+          <section class="expect" aria-labelledby="expectTitle">
+            <h2 id="expectTitle">מה מצפה לך?</h2>
+            <div class="expect-grid">
+              <div class="item"><span class="icon">01</span><span>היכרות ראשונה עם Bizi</span></div>
+              <div class="item"><span class="icon">02</span><span>התנסות בתהליכי העבודה החדשים</span></div>
+              <div class="item"><span class="icon">03</span><span>הזדמנות להשפיע על חוויית המשתמש</span></div>
+              <div class="item"><span class="icon">04</span><span>להיות חלק משמעותי מהדרך להשקת המערכת</span></div>
+            </div>
+          </section>
+
+          <section class="meeting">
+            <h2>פרטי המפגש</h2>
+            <p>יישלחו בהמשך</p>
+          </section>
+
+          <p class="closing">מחכים לצאת איתך לדרך.</p>
+          <button class="join" id="joinButton">אני בפנים</button>
+          <p class="note">* לאחר הלחיצה, יש לאשר את ההשתתפות גם בהודעה חוזרת למאיה.</p>
+
+          <section class="success" id="success" aria-live="polite">
+            <div class="success-icon">✓</div>
+            <h2>איזה כיף!</h2>
+            <p>שמחים לצרף אותך ל־Bizi Pilot.<br />כדי להשלים את האישור, יש להשיב למאיה בהודעה חוזרת.</p>
+          </section>
+        </article>
+      </div>
+    </section>
+  </main>
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
+
+  <script>
+    const page = document.getElementById('page');
+    const openInvitation = document.getElementById('openInvitation');
+    const joinButton = document.getElementById('joinButton');
+    const success = document.getElementById('success');
+    const confetti = document.getElementById('confetti');
+
+    openInvitation.addEventListener('click', () => {
+      page.classList.add('is-open');
+      setTimeout(() => document.getElementById('letter').focus?.(), 900);
+    });
+
+    joinButton.addEventListener('click', () => {
+      joinButton.hidden = true;
+      document.querySelector('.note').hidden = true;
+      success.classList.add('show');
+      launchConfetti();
+      success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    function launchConfetti() {
+      const colors = ['#ea5a99', '#ffffff', '#9eb7e5', '#173d74'];
+      for (let i = 0; i < 52; i++) {
+        const piece = document.createElement('span');
+        piece.className = 'piece';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.setProperty('--duration', (2.2 + Math.random() * 2.4) + 's');
+        piece.style.setProperty('--drift', ((Math.random() - .5) * 240) + 'px');
+        piece.style.animationDelay = (Math.random() * .45) + 's';
+        confetti.appendChild(piece);
+        setTimeout(() => piece.remove(), 5200);
+      }
+    }
+  </script>
+</body>
+</html>
